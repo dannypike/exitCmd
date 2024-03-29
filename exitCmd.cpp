@@ -49,6 +49,23 @@ string getProcessExePath(DWORD processId) {
    return exePath;
 }
 
+string getLastErrorAsString(DWORD *lastError = nullptr)
+{
+   DWORD errorCode = lastError ? *lastError : GetLastError();
+   if (errorCode == 0)
+      return string(); //No error message has been recorded
+
+   LPSTR messageBuffer = nullptr;
+   size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+      NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+   string message(messageBuffer, size);
+   LocalFree(messageBuffer);
+
+   message = message + "<" + to_string(errorCode) + ">";
+   return message;
+}
+
 static void pressKey(WORD key, bool up) {
    INPUT input = { 0 };
    input.type = INPUT_KEYBOARD;
@@ -56,7 +73,10 @@ static void pressKey(WORD key, bool up) {
    if (up) {
       input.ki.dwFlags = KEYEVENTF_KEYUP;
    }
-   SendInput(1, &input, sizeof(INPUT));
+   Sleep(50);
+   if (1 != SendInput(1, &input, sizeof(INPUT))) {
+      cout << "SendInput " << key << " failed, last error = " << getLastErrorAsString() << endl;
+   }
 }
 
 int main()
@@ -69,6 +89,8 @@ int main()
    cout << "Parent process exe path: " << parentProcessExePath << endl;
 
    if (parentProcessExePath.find("cmd.exe") != string::npos) {
+      pressKey(VK_ESCAPE, false);
+      pressKey(VK_ESCAPE, true);
       pressKey('E', false);
       pressKey('E', true);
       pressKey('X', false);
@@ -78,6 +100,9 @@ int main()
       pressKey('T', false);
       pressKey(VK_RETURN, false);
       pressKey(VK_RETURN, true);
+   }
+   else {
+      cout << "not running in cmd.exe" << endl;
    }
 
    return 0;

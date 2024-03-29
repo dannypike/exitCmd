@@ -13,5 +13,14 @@ Run it at the end of your batch file:
 ... do stuff
 exitCmd
 ```
- and the command window will disappear as soon as the batch file ends. If you put other commands after this one, then those commands will "eat" the keystrokes and the results may be unexpected. :)
+ and the command window will disappear as soon as the batch file ends.
  
+## Troubleshooting
+
+ 1. If you put other commands after this one, then those commands may "eat" the keystrokes and the results may be undesirable / unexpected.
+ 2. If you find it doesn't work very well, add a sleep of a few seconds before the exitCmd:
+ ```
+    sleep 3
+    exitCmd
+ ```
+3. Try to put the exitCmd.exe on the PATH or in the current dirctory, or give it a full pathname in the batch file. If you use a batch file to invoke the exitCmd.exe, it sometimes fails.
